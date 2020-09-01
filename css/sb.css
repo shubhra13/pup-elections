@@ -1,0 +1,41 @@
+/* html body {
+	font-family: "Inter", sans-serif;
+	background-color: mix(#fff, #e91e63, 82%);
+} */
+
+
+body, html {
+    height: 100%;
+  }
+
+/* body { background: lightblue !important; }  */
+
+  
+  .bg { 
+    /* The image used */
+    background-image: url("../images/Picture1.jpg");
+    /* background-color: mix(#fff, #e91e63, 82%) ; */
+    /* Full height */
+    height: 100%; 
+  
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  
+
+h1.logo {
+	color: steelblue !important;
+	/* font-size: calc(1em + 20vw) ;   */
+	font-weight: 900;
+	text-shadow: 
+		-0.0075em 0.0075em 0 mix(#fff, #e91e63, 94%),
+		0.005em 0.005em 0 mix(#fff, #e91e63, 60%),
+		0.01em 0.01em 0 mix(#fff, #e91e63, 62%), 
+		0.015em 0.015em mix(#fff, #e91e63, 64%), 
+		0.02em 0.02em 0 mix(#fff, #e91e63, 66%), 
+		0.025em 0.025em 0 mix(#fff, #e91e63, 68%),
+		0.03em 0.03em 0 mix(#fff, #e91e63, 70%),
+		0.035em 0.035em 0 mix(#fff, #e91e63, 72%);
+}
