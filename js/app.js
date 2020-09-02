@@ -1,4 +1,4 @@
-const contract_address = "0x380dAB105f1596A99787c39dB2929B3fb8C20382";
+const contract_address = "0x77df618E3b4FAE9D2fEC6dC72f345592F86a04BE";
 var account;
 var contract;
 var myVote;
