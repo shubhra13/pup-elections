@@ -1,4 +1,4 @@
-const contract_address = "0x77df618E3b4FAE9D2fEC6dC72f345592F86a04BE";
+const contract_address = "0xfD04115483018ee1C70BdA6D5FC226B1415b4D3e";
 var account;
 var contract;
 var myVote;
@@ -160,6 +160,7 @@ App = {
         }
         else{
           electionStatus = "Closed"; 
+          document.getElementById("STATE").innerHTML = electionStatus;
           App.winner();           
           
         }
