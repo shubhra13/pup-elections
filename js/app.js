@@ -1,6 +1,9 @@
-const contract_address = "0x48A6994E9e3977a8d116DB8B0d76a3FD4169D418";
+const contract_address = "0x380dAB105f1596A99787c39dB2929B3fb8C20382";
 var account;
 var contract;
+var myVote;
+var petdata;
+var electionStatus ="Open";
 App = {
   ethEnabled: function () {
     // If the browser has MetaMask installed
@@ -15,6 +18,7 @@ App = {
 
 
   init: async function() {
+    
 
     contract = this.contract.methods;
     // Load pets.
@@ -23,7 +27,6 @@ App = {
     $.getJSON('../pets.json', function(data) {
       var petsRow = $('#petsRow');
       var petTemplate = $('#petTemplate');
-      console.log("data",data);
 
       for (i = 0; i < data.length; i ++) {
         petTemplate.find('.panel-title').text(data[i].name);
@@ -34,9 +37,11 @@ App = {
         petTemplate.find('.pet-address').text(data[i].address);
         petTemplate.find('.btn-adopt').attr('data-id', data[i].id);
 
-        petsRow.append(petTemplate.html());
+        petsRow.append(petTemplate.html());        
       }
-      // App.markAdopted();
+      petdata = data;
+      console.log("petdata", petdata);
+      document.getElementById("eventslog").innerHTML += 'Voting Started...' + "<br />";
       
     });
 
@@ -58,34 +63,14 @@ App = {
   },
 
   bindEvents: function() {
-    $(document).on('click', '.btn-adopt', App.handleAdopt);
+    $(document).on('click', '.btn-adopt', App.voteFor);
+    $(document).on('click', '.btn-result', App.refresh);
+    $(document).on('click', '.btn-start', App.startElection);
+    $(document).on('click', '.btn-end', App.endElection);
   },
 
-  markAdopted: function() {
 
-    // get the instance of our contract
-    // return get All candidates 
-    contract.getAllCandidates().call(function (err, res) {
-      if (!err) {
-        console.log("result",res.length);
-        for (let index = 0; index < res.length; index++) {
-
-          if(!web3.utils.toBN(res[i]).isZero()){
-            $('.panel-pet').eq(i).find("button").text("Success").attr("disabled", true);
-          }
-          console.log(err);          
-        }
-      }
-      else {
-        console.log(err);
-      }
-    });
-
-    console.log("markAdopted function:");
-   
-  },
-
-  handleAdopt: async function(event) {
+  voteFor: async function(event) {
     event.preventDefault();
 
     var petId = parseInt($(event.target).data('id'));
@@ -95,6 +80,7 @@ App = {
 
     console.log("address:", account);
     console.log("petId:", petId);
+    
     console.log("address:", account[0]);
 
     contract.votes(account[0]).call(function (err, res) {
@@ -102,11 +88,12 @@ App = {
       if (!err) {
         if(res == 0)
         {
-          console.log("res is zero");
+          console.log("res is zero");          
           contract.vote(petId).send({from: account[0], candidateId: petId, gasPrice: 20000000000 ,gas: 300000}, function (err, res) {
             if (!err) {
-              console.log("transaction:", res);
-              
+              console.log("transaction:", res);                          
+              document.getElementById("eventslog").innerHTML += 'Thank You for voting...' + "<br />"; 
+              alert("We are registering your vote to the blockchain...please give us 15 seconds");
             }
             else {
               console.log(err);
@@ -132,6 +119,106 @@ App = {
 
   },
 
+
+  refresh: async function(){
+
+    this.accounts = await window.web3.eth.getAccounts();
+    account = this.accounts;
+
+
+    contract.totalVotes().call(function (err, res) {
+      if (!err) {
+        console.log("Total Votes", res);
+        document.getElementById("total_votes").innerHTML = res;
+      }
+      else {
+        console.log(err);
+      }
+    });
+
+
+    contract.votes(account[0]).call(function (err, res) {
+      if (!err) {
+        console.log("res: ", res);
+        if(res > 0){
+        console.log("MyVote", petdata[res-1].name);
+        document.getElementById("myVote").innerHTML = petdata[res-1].name;        
+        }
+      }
+      else {
+        console.log(err);
+      }
+    });
+
+    contract.ended().call(function (err, res) {
+      if (!err) {
+        console.log("election status", res);        
+        if (!res){
+          electionStatus = "Open";
+          document.getElementById("winner").innerHTML = "Voting is still going on...";
+          
+        }
+        else{
+          electionStatus = "Closed"; 
+          App.winner();           
+          
+        }
+        document.getElementById("STATE").innerHTML = electionStatus;
+      }
+      else {
+        console.log(err);
+      }
+    });
+     
+  },
+
+  
+  winner: async function(){
+
+    contract.winnerCandidate().call(function (err, res) {
+      if (!err) {
+        console.log("winner", res[0]);
+        var id = parseInt(res[0]);
+        document.getElementById("winner").innerHTML = petdata[res[0]-1].name +  " won by " + res[1] + " vote/s";        
+        document.getElementById("eventslog").innerHTML = "Winner is..." + petdata[res[0]-1].name +"<br/>";        
+        
+        $("#myModal").modal('show');
+        document.getElementById("displayAsset").innerHTML = petdata[res[0]-1].name +"<br/>";        
+        setTimeout(function() {$('#myModal').modal('hide');}, 5000)
+        console.log("maxvote", res[1]);                
+      }
+      else {
+        console.log(err);
+      }
+    });
+  },
+  
+  endElection: async function(){
+
+
+    this.accounts = await window.web3.eth.getAccounts();
+    account = this.accounts;
+
+    contract.electionEnd().send({from: account[0], gasPrice: 20000000000 ,gas: 300000}, function (err, res) {
+      if (!err) {
+        console.log("transaction:", res);                          
+        document.getElementById("eventslog").innerHTML += "Election Ended..." + "<br/>";   
+        App.refresh();
+      }
+      else {
+        console.log(err);
+        alert("You are not the FEC! You cannot end the election");
+      }
+    });
+  },
+
+  startElection: async function(){
+    alert("Election is controlled by FEC! You cannot start/end the election");    
+
+  },
+  
+
+  
 
   main: async function () {
     // Initialize web3
