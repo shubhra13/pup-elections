@@ -1,4 +1,4 @@
-const contract_address = "0xfD04115483018ee1C70BdA6D5FC226B1415b4D3e";
+const contract_address = "0xa719C9B48d2C9EC306BcEA35B6285b920e414f09";
 var account;
 var contract;
 var myVote;
@@ -241,15 +241,6 @@ App = {
       {defaultAccount: this.accounts[0] }
     );
     console.log("Contract object", this.contract);
-
-    // this.contract.methods.voters(0).call(function (err, res) {
-    //   if (!err) {
-    //     console.log("default account", res);
-    //   }
-    //   else {
-    //     console.log(err);
-    //   }
-    // });
     
     this.init();  
   }
