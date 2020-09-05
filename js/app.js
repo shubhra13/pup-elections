@@ -1,9 +1,10 @@
-const contract_address = "0xa719C9B48d2C9EC306BcEA35B6285b920e414f09";
+const contract_address = "0xdD9F565737e29608e48c9135640835565A226a57";
 var account;
 var contract;
 var myVote;
 var petdata;
 var electionStatus ="Open";
+var winnerId;
 App = {
   ethEnabled: function () {
     // If the browser has MetaMask installed
@@ -74,7 +75,9 @@ App = {
     event.preventDefault();
 
     var petId = parseInt($(event.target).data('id'));
-
+    var petadd = petdata[petId-1].address;
+    console.log("petaddress: ", petadd);
+    
     this.accounts = await window.web3.eth.getAccounts();
     account = this.accounts;
 
@@ -89,7 +92,7 @@ App = {
         if(res == 0)
         {
           console.log("res is zero");          
-          contract.vote(petId).send({from: account[0], candidateId: petId, gasPrice: 20000000000 ,gas: 300000}, function (err, res) {
+          contract.vote(petId, petadd).send({from: account[0], candidateId: petId, gasPrice: 20000000000 ,gas: 300000}, function (err, res) {
             if (!err) {
               console.log("transaction:", res);                          
               document.getElementById("eventslog").innerHTML += 'Thank You for voting...' + "<br />"; 
@@ -180,7 +183,8 @@ App = {
       if (!err) {
         console.log("winner", res[0]);
         var id = parseInt(res[0]);
-        document.getElementById("winner").innerHTML = petdata[res[0]-1].name +  " won by " + res[1] + " vote/s";        
+        winnerId = res[1];
+        document.getElementById("winner").innerHTML = petdata[res[0]-1].name +  " won by " + winnerId + " vote/s";        
         document.getElementById("eventslog").innerHTML = "Winner is..." + petdata[res[0]-1].name +"<br/>";        
         
         $("#myModal").modal('show');
@@ -199,6 +203,8 @@ App = {
 
     this.accounts = await window.web3.eth.getAccounts();
     account = this.accounts;
+
+    console.log("endElection account ",account[0]);
 
     contract.electionEnd().send({from: account[0], gasPrice: 20000000000 ,gas: 300000}, function (err, res) {
       if (!err) {
